@@ -33,7 +33,8 @@
     "metro-core": "^0.80.0",
     "micromatch": "^4.0.5",
     "node-fetch": "^2.2.0",
-    "readline": "^1.3.0"
+    "readline": "^1.3.0",
+    "yaml": "^2.3.4"
   },
   "devDependencies": {
     "metro-resolver": "^0.80.0"
