@@ -73,15 +73,6 @@ function getOverrideConfig(
     },
   };
 
-  // Applying the heuristic of appending workspace root as watch folder,
-  // only if no other watch folder (beside the project root) has been given.
-  if (!config.watchFolders.some(folder => folder !== ctx.root)) {
-    const workspaceRoot = getWorkspaceRoot(ctx.root);
-    if (typeof workspaceRoot === 'string') {
-      overrides.watchFolders = [...config.watchFolders, workspaceRoot];
-    }
-  }
-
   return overrides;
 }
 
@@ -119,10 +110,19 @@ This warning will be removed in future (https://github.com/facebook/metro/issues
     }
   }
 
-  const config = await loadConfig({
-    cwd,
-    ...options,
-  });
+  const workspaceRoot = getWorkspaceRoot(ctx.root);
+
+  const config = await loadConfig(
+    {
+      cwd,
+      ...options,
+    },
+    typeof workspaceRoot === 'string'
+      ? {
+          watchFolders: [workspaceRoot],
+        }
+      : undefined,
+  );
 
   const overrideConfig = getOverrideConfig(ctx, config);
 
