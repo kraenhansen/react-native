@@ -17,11 +17,11 @@ def setup_jsc!(react_native_path: "../node_modules/react-native", fabric_enabled
     end
 end
 
-# It sets up the Hermes and JSI pods.
+# It sets up the Hermes, JSI and Node API pods.
 #
 # @parameter react_native_path: relative path to react-native
-# @parameter fabric_enabled: whether Fabirc is enabled
-def setup_hermes!(react_native_path: "../node_modules/react-native")
+# @parameter node_api_enabled: whether Node API is enabled
+def setup_hermes!(react_native_path: "../node_modules/react-native", node_api_enabled: false)
     react_native_dir = Pod::Config.instance.installation_root.join(react_native_path)
     pod 'React-jsi', :path => "#{react_native_path}/ReactCommon/jsi"
     # This `:tag => hermestag` below is only to tell CocoaPods to update hermes-engine when React Native version changes.
@@ -30,4 +30,7 @@ def setup_hermes!(react_native_path: "../node_modules/react-native")
     hermestag = File.exist?(hermestag_file) ? File.read(hermestag_file).strip : ''
     pod 'hermes-engine', :podspec => "#{react_native_path}/sdks/hermes-engine/hermes-engine.podspec", :tag => hermestag
     pod 'React-hermes', :path => "#{react_native_path}/ReactCommon/hermes"
+    if node_api_enabled
+        pod 'React-node-api', :path => "#{react_native_path}/ReactCommon/node-api"
+    end
 end

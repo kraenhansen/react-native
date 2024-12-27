@@ -960,6 +960,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				USE_HERMES = true;
+				USE_NODE_API = true;
 				WARNING_CFLAGS = (
 					"-Wextra",
 					"-Wall",
@@ -1052,6 +1053,7 @@
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
+				USE_NODE_API = true;
 				VALIDATE_PRODUCT = YES;
 				WARNING_CFLAGS = (
 					"-Wextra",

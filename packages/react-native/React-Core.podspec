@@ -29,6 +29,9 @@ boost_compiler_flags = boost_config[:compiler_flags]
 use_hermes = ENV['USE_HERMES'] == nil || ENV['USE_HERMES'] == '1'
 use_hermes_flag = use_hermes ? "-DUSE_HERMES=1" : ""
 
+use_node_api = ENV['USE_NODE_API'] == '1'
+use_node_api_flag = use_node_api ? "-DUSE_NODE_API=1" : ""
+
 header_subspecs = {
   'CoreModulesHeaders'          => 'React/CoreModules/**/*.h',
   'RCTActionSheetHeaders'       => 'Libraries/ActionSheetIOS/*.h',
@@ -70,7 +73,7 @@ Pod::Spec.new do |s|
   s.platforms              = min_supported_versions
   s.source                 = source
   s.resource_bundle        = { "RCTI18nStrings" => ["React/I18n/strings/*.lproj"]}
-  s.compiler_flags         = folly_compiler_flags + ' ' + boost_compiler_flags + ' ' + use_hermes_flag
+  s.compiler_flags         = folly_compiler_flags + ' ' + boost_compiler_flags + ' ' + use_hermes_flag + ' ' + use_node_api_flag
   s.header_dir             = "React"
   s.framework              = "JavaScriptCore"
   s.pod_target_xcconfig    = {

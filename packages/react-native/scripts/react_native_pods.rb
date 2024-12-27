@@ -64,6 +64,7 @@ def use_react_native! (
   new_arch_enabled: NewArchitectureHelper.new_arch_enabled,
   production: false, # deprecated
   hermes_enabled: ENV['USE_HERMES'] && ENV['USE_HERMES'] == '0' ? false : true,
+  node_api_enabled: ENV['USE_NODE_API'] == '1' ? true : false,
   app_path: '..',
   config_file_dir: '',
   privacy_file_aggregation_enabled: true
@@ -90,6 +91,7 @@ def use_react_native! (
 
   ENV['RCT_FABRIC_ENABLED'] = fabric_enabled ? "1" : "0"
   ENV['USE_HERMES'] = hermes_enabled ? "1" : "0"
+  ENV['USE_NODE_API'] = node_api_enabled ? "1" : "0"
   ENV['RCT_AGGREGATE_PRIVACY_FILES'] = privacy_file_aggregation_enabled ? "1" : "0"
 
   prefix = path
@@ -133,7 +135,7 @@ def use_react_native! (
   pod 'React-RCTFBReactNativeSpec', :path => "#{prefix}/React"
 
   if hermes_enabled
-    setup_hermes!(:react_native_path => prefix)
+    setup_hermes!(:react_native_path => prefix, :node_api_enabled => node_api_enabled)
   else
     setup_jsc!(:react_native_path => prefix, :fabric_enabled => fabric_enabled)
   end
@@ -382,6 +384,7 @@ def react_native_post_install(
 
   fabric_enabled = ENV['RCT_FABRIC_ENABLED'] == '1'
   hermes_enabled = ENV['USE_HERMES'] == '1'
+  node_api_enabled = ENV['USE_NODE_API'] == '1'
   privacy_file_aggregation_enabled = ENV['RCT_AGGREGATE_PRIVACY_FILES'] == '1'
 
   if hermes_enabled
@@ -391,6 +394,7 @@ def react_native_post_install(
   ReactNativePodsUtils.fix_library_search_paths(installer)
   ReactNativePodsUtils.update_search_paths(installer)
   ReactNativePodsUtils.set_build_setting(installer, build_setting: "USE_HERMES", value: hermes_enabled)
+  ReactNativePodsUtils.set_build_setting(installer, build_setting: "USE_NODE_API", value: node_api_enabled)
   ReactNativePodsUtils.set_build_setting(installer, build_setting: "REACT_NATIVE_PATH", value: File.join("${PODS_ROOT}", "..", react_native_path))
   ReactNativePodsUtils.set_build_setting(installer, build_setting: "SWIFT_ACTIVE_COMPILATION_CONDITIONS", value: ['$(inherited)', 'DEBUG'], config_name: "Debug")
 
