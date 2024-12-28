@@ -1917,7 +1917,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: ca11a10dac95eb2e2759868e1de6827c727f74b2
   React-nativeconfig: 0285edcb1a2f0cfca3d08fa84bda3bb5847f79c9
   React-NativeModulesApple: f1a29228c31e2b1bd38891241b308c2e5bb4a856
-  React-node-api: 604c1dcbb378351a8feca1a8e9ba8f61bd05a49a
+  React-node-api: 8dec3ee98af5bd61680802727b0cfc180200358f
   React-perflogger: 433c0709a49d6f7411188db09dc8cb64b2294a9e
   React-performancetimeline: 7b44e19dd5ae3925553b3c45857d31cda0a04b01
   React-RCTActionSheet: f7b5814ba810d2c16213233452128e3095d3eb5c

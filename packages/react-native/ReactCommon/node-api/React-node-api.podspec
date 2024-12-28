@@ -30,7 +30,7 @@ Pod::Spec.new do |s|
 
   s.header_dir    = "node-api"
   s.pod_target_xcconfig    = {
-    "HEADER_SEARCH_PATHS" => "",
+    "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/node-api\"",
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
     "DEFINES_MODULE" => "YES"
   }

@@ -598,6 +598,24 @@ class ReactNativePodsUtils
         ReactNativePodsUtils.update_header_paths_if_depends_on(target_installation_result, "React-ImageManager", header_search_paths)
     end
 
+    # Sets the node-api directory as a header search path for all projects
+    # The main reason for this is because the napi.h file reference node_api.h using an <angled> include,
+    # resulting in the following build error:
+    #   'node_api.h' file not found with <angled> include; use "quotes" instead
+    # Since the header is vendor in and we don't want to modify it, we add the directory to the search path instead.
+    def self.set_nodeapi_search_path(installer)
+        projects = self.extract_projects(installer)
+        projects.each do |project|
+            project.build_configurations.each do |config|
+                node_api_search_path = "$(PODS_ROOT)/Headers/Public/React-node-api/node-api"
+                header_search_paths = config.build_settings["HEADER_SEARCH_PATHS"] ||= "$(inherited)"
+                header_search_paths = self.add_search_path_if_not_included(header_search_paths, node_api_search_path)
+                config.build_settings["HEADER_SEARCH_PATHS"] = header_search_paths
+            end
+            project.save()
+        end
+    end
+
     def self.react_native_pods
         return [
             "DoubleConversion",

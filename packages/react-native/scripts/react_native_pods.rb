@@ -391,6 +391,10 @@ def react_native_post_install(
     ReactNativePodsUtils.set_gcc_preprocessor_definition_for_React_hermes(installer)
   end
 
+  if node_api_enabled
+    ReactNativePodsUtils.set_nodeapi_search_path(installer)
+  end
+
   ReactNativePodsUtils.fix_library_search_paths(installer)
   ReactNativePodsUtils.update_search_paths(installer)
   ReactNativePodsUtils.set_build_setting(installer, build_setting: "USE_HERMES", value: hermes_enabled)
