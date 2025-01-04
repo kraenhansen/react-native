@@ -602,8 +602,9 @@ class ReactNativePodsUtils
     # The main reason for this is because the napi.h file reference node_api.h using an <angled> include,
     # resulting in the following build error:
     #   'node_api.h' file not found with <angled> include; use "quotes" instead
-    # Since the header is vendor in and we don't want to modify it, we add the directory to the search path instead.
-    def self.set_nodeapi_search_path(installer)
+    # Since the header is vendored in and we don't want to modify it, we add the directory to the search path instead.
+    # This also configures the compiler to enable C++ exceptions for node-api.
+    def self.set_nodeapi_search_path_and_definitions(installer)
         projects = self.extract_projects(installer)
         projects.each do |project|
             project.build_configurations.each do |config|
@@ -611,6 +612,9 @@ class ReactNativePodsUtils
                 header_search_paths = config.build_settings["HEADER_SEARCH_PATHS"] ||= "$(inherited)"
                 header_search_paths = self.add_search_path_if_not_included(header_search_paths, node_api_search_path)
                 config.build_settings["HEADER_SEARCH_PATHS"] = header_search_paths
+                # Add compiler definitions for enabling node-api exceptions
+                self.add_flag_to_map_with_inheritance(config.build_settings, 'OTHER_CPLUSPLUSFLAGS', ' -DNODE_ADDON_API_CPP_EXCEPTIONS')
+                self.add_flag_to_map_with_inheritance(config.build_settings, 'OTHER_CPLUSPLUSFLAGS', ' -DNODE_ADDON_API_CPP_EXCEPTIONS_ALL')
             end
             project.save()
         end

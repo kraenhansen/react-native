@@ -392,7 +392,7 @@ def react_native_post_install(
   end
 
   if node_api_enabled
-    ReactNativePodsUtils.set_nodeapi_search_path(installer)
+    ReactNativePodsUtils.set_nodeapi_search_path_and_definitions(installer)
   end
 
   ReactNativePodsUtils.fix_library_search_paths(installer)
