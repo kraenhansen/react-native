@@ -30,6 +30,8 @@ Pod::Spec.new do |s|
 
   s.header_dir    = "node-api"
   s.pod_target_xcconfig    = {
+    # As the headers include each other using <angle> brackets,
+    # we need to add the header directory to the header search paths.
     "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/node-api\"",
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
     "DEFINES_MODULE" => "YES"
