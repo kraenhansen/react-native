@@ -612,9 +612,10 @@ class ReactNativePodsUtils
                 header_search_paths = config.build_settings["HEADER_SEARCH_PATHS"] ||= "$(inherited)"
                 header_search_paths = self.add_search_path_if_not_included(header_search_paths, node_api_search_path)
                 config.build_settings["HEADER_SEARCH_PATHS"] = header_search_paths
-                # Add compiler definitions for enabling node-api exceptions
-                self.add_flag_to_map_with_inheritance(config.build_settings, 'OTHER_CPLUSPLUSFLAGS', ' -DNODE_ADDON_API_CPP_EXCEPTIONS')
-                self.add_flag_to_map_with_inheritance(config.build_settings, 'OTHER_CPLUSPLUSFLAGS', ' -DNODE_ADDON_API_CPP_EXCEPTIONS_ALL')
+                # Add compiler definitions to enable C++ exceptions in the N-API headers
+                # See https://github.com/nodejs/node-addon-api/blob/v8.3.0/doc/cmake-js.md#exception-handling
+                self.add_flag_to_map_with_inheritance(config.build_settings, 'OTHER_CPLUSPLUSFLAGS', '-DNODE_ADDON_API_CPP_EXCEPTIONS')
+                self.add_flag_to_map_with_inheritance(config.build_settings, 'OTHER_CPLUSPLUSFLAGS', '-DNODE_ADDON_API_CPP_EXCEPTIONS_ALL')
             end
             project.save()
         end
@@ -682,7 +683,7 @@ class ReactNativePodsUtils
     end
 
     def self.add_ndebug_flag_to_pods_in_release(installer)
-        ndebug_flag = " -DNDEBUG"
+        ndebug_flag = "-DNDEBUG"
 
         installer.aggregate_targets.each do |aggregate_target|
             aggregate_target.xcconfigs.each do |config_name, config_file|
@@ -712,11 +713,11 @@ class ReactNativePodsUtils
 
     def self.add_flag_to_map_with_inheritance(map, field, flag)
         if map[field] == nil
-            map[field] = "$(inherited)" + flag
+            map[field] = "$(inherited) " + flag
         else
             unless map[field].include?(flag)
                 if map[field].instance_of? String
-                    map[field] = map[field] + flag
+                    map[field] = map[field] + " " + flag
                 elsif map[field].instance_of? Array
                     map[field].push(flag)
                 end

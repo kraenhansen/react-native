@@ -43,7 +43,7 @@ class NewArchitectureHelper
 
     def self.computeFlags(is_new_arch_enabled)
         new_arch_flag = is_new_arch_enabled ? "-DRCT_NEW_ARCH_ENABLED=1 " : ""
-        return " #{new_arch_flag}#{Helpers::Constants.folly_config()[:compiler_flags]}"
+        return "#{new_arch_flag}#{Helpers::Constants.folly_config()[:compiler_flags]}"
     end
 
     def self.modify_flags_for_new_architecture(installer, is_new_arch_enabled)
@@ -101,7 +101,7 @@ class NewArchitectureHelper
                 }
         end
         header_search_paths_string = header_search_paths.join(" ")
-        spec.compiler_flags = compiler_flags.empty? ? self.computeFlags(new_arch_enabled).strip! : "#{compiler_flags} #{self.computeFlags(new_arch_enabled)}"
+        spec.compiler_flags = compiler_flags.empty? ? self.computeFlags(new_arch_enabled) : "#{compiler_flags} #{self.computeFlags(new_arch_enabled)}"
         current_config["HEADER_SEARCH_PATHS"] = current_headers.empty? ?
             header_search_paths_string :
             "#{current_headers} #{header_search_paths_string}"
