@@ -45,7 +45,7 @@ cmake_build_type=""
 if [[ $CONFIGURATION == "Debug" ]]; then
   # JS developers aren't VM developers.
   # Therefore we're passing as build type Release, to provide a faster build.
-  cmake_build_type="Release"
+  cmake_build_type="Debug"
 else
   cmake_build_type="MinSizeRel"
 fi
