@@ -16,7 +16,7 @@
 #import <napi.h>
 
 // TODO: Remove this declaration once its added to a header from hermes
-extern "C" NAPI_EXTERN napi_status NAPI_CDECL hermes_create_napi_env(
+NAPI_EXTERN napi_status NAPI_CDECL hermes_create_napi_env(
     ::hermes::vm::Runtime& runtime,
     bool isInspectable,
     std::shared_ptr<facebook::jsi::PreparedScriptStore> preparedScript,
@@ -48,24 +48,26 @@ class HelloAddon : public Napi::Addon<HelloAddon> {
 - (void)tearDown {
 }
 
-- (void)testExample {
-  ::hermes::vm::RuntimeConfig rt_config{};
+- (void)testAddon {
+  ::hermes::vm::RuntimeConfig rt_config = ::hermes::vm::RuntimeConfig::Builder().build();
   auto hermesRuntime = facebook::hermes::makeHermesRuntime(rt_config);
   ::hermes::vm::Runtime* rt = hermesRuntime->getVMRuntimeUnsafe();
-
+  
   napi_env _env;
   hermes_create_napi_env(*rt, false, nullptr, rt_config, &_env);
-  
-  napi_value _exports = nullptr;
-  napi_status status = napi_create_object(_env, &_exports);
-  if (status != napi_ok) {
-    throw std::runtime_error("Failed to build napi environment from hermes runtime");
-  }
   Napi::Env env{_env};
-  Napi::Object exports{_env, _exports};
-  HelloAddon addon{env, exports};
+  Napi::HandleScope {env};
   
-  // TODO: Convert the Node Addon "exports" object back to JSI and call the "hello" function on it
+  Napi::Object exports = Napi::Object::New(env);
+  HelloAddon::Init(env, exports);
+  
+  // Test
+  auto result = exports.Get("hello").As<Napi::Function>().Call(exports, {});
+  XCTAssertFalse(result.IsEmpty());
+  XCTAssertTrue(result.IsString());
+  XCTAssertTrue(result.StrictEquals(Napi::String::New(env, "world")));
+  
+  // TODO: Access "exports" object and call the "hello" function on it via JSI
 }
 
 @end
