@@ -64,10 +64,10 @@ class CodegenUtilsTests < Test::Unit::TestCase
         CodegenUtils.new().generate_react_codegen_podspec!(spec, codegen_output_dir, file_manager: FileMock, logger: Pod::UI)
 
         # Assert
-        assert_equal(Pod::UI.collected_messages, ["Skipping ReactCodegen podspec generation."])
-        assert_equal(Pathname.pwd_invocation_count, 0)
-        assert_equal(Pod::Executable.executed_commands, [])
-        assert_equal(Pod::Config.instance.installation_root.relative_path_from_invocation_count, 0)
+        assert_equal(["Skipping ReactCodegen podspec generation."], Pod::UI.collected_messages)
+        assert_equal(0, Pathname.pwd_invocation_count)
+        assert_equal([], Pod::Executable.executed_commands)
+        assert_equal(0, Pod::Config.instance.installation_root.relative_path_from_invocation_count)
         assert_true(CodegenUtils.react_codegen_podspec_generated)
     end
 
@@ -80,13 +80,13 @@ class CodegenUtilsTests < Test::Unit::TestCase
         CodegenUtils.new().generate_react_codegen_podspec!(spec, codegen_output_dir, file_manager: FileMock, logger: Pod::UI)
 
         # Assert
-        assert_equal(Pathname.pwd_invocation_count, 1)
-        assert_equal(Pod::Config.instance.installation_root.relative_path_from_invocation_count, 1)
-        assert_equal(Pod::Executable.executed_commands, [{ "command" => 'mkdir', "arguments" => ["-p", "~/app/ios/build"]}])
-        assert_equal(Pod::UI.collected_messages, ["Generating ~/app/ios/build/ReactCodegen.podspec.json"])
-        assert_equal(FileMock.open_files_with_mode["~/app/ios/build/ReactCodegen.podspec.json"], 'w')
-        assert_equal(FileMock.open_files[0].collected_write, ['{"name":"Test Podspec"}'])
-        assert_equal(FileMock.open_files[0].fsync_invocation_count, 1)
+        assert_equal(1, Pathname.pwd_invocation_count)
+        assert_equal(1, Pod::Config.instance.installation_root.relative_path_from_invocation_count)
+        assert_equal([{ "command" => 'mkdir', "arguments" => ["-p", "~/app/ios/build"]}], Pod::Executable.executed_commands)
+        assert_equal(["Generating ~/app/ios/build/ReactCodegen.podspec.json"], Pod::UI.collected_messages)
+        assert_equal('w', FileMock.open_files_with_mode["~/app/ios/build/ReactCodegen.podspec.json"])
+        assert_equal(['{"name":"Test Podspec"}'], FileMock.open_files[0].collected_write)
+        assert_equal(1, FileMock.open_files[0].fsync_invocation_count)
 
         assert_true(CodegenUtils.react_codegen_podspec_generated)
     end
@@ -108,8 +108,8 @@ class CodegenUtilsTests < Test::Unit::TestCase
         )
 
         # Assert
-        assert_equal(podspec, get_podspec_fabric_and_script_phases("echo Test Script Phase"))
-        assert_equal(Pod::UI.collected_messages, ["Adding script_phases to ReactCodegen."])
+        assert_equal(get_podspec_fabric_and_script_phases("echo Test Script Phase"), podspec)
+        assert_equal(["Adding script_phases to ReactCodegen."], Pod::UI.collected_messages)
     end
 
     def testGetReactCodegenSpec_whenUseFrameworksAndNewArch_generatesAPodspec
@@ -127,8 +127,8 @@ class CodegenUtilsTests < Test::Unit::TestCase
         )
 
         # Assert
-        assert_equal(podspec, get_podspec_when_use_frameworks())
-        assert_equal(Pod::UI.collected_messages, [])
+        assert_equal(get_podspec_when_use_frameworks(), podspec)
+        assert_equal([], Pod::UI.collected_messages)
     end
 
     # =============================== #
@@ -142,7 +142,7 @@ class CodegenUtilsTests < Test::Unit::TestCase
         codegen = CodegenUtils.new().get_codegen_config_from_file('package.json', 'codegenConfig', file_manager: FileMock)
 
         # Assert
-        assert_equal(codegen, {})
+        assert_equal({}, codegen)
     end
 
     def testGetCodegenConfigFromFile_whenFileExistsButHasNoKey_returnEmpty
@@ -154,7 +154,7 @@ class CodegenUtilsTests < Test::Unit::TestCase
         codegen = CodegenUtils.new().get_codegen_config_from_file('package.json', 'codegen', file_manager: FileMock)
 
         # Assert
-        assert_equal(codegen, {})
+        assert_equal({}, codegen)
     end
 
     def testGetCodegenConfigFromFile_whenFileExistsAndHasKey_returnObject
@@ -166,7 +166,7 @@ class CodegenUtilsTests < Test::Unit::TestCase
         codegen = CodegenUtils.new().get_codegen_config_from_file('package.json', 'codegenConfig', file_manager: FileMock )
 
         # Assert
-        assert_equal(codegen, { "name" => "MySpec"})
+        assert_equal({ "name" => "MySpec"}, codegen)
     end
 
     # ======================= #
@@ -196,14 +196,14 @@ class CodegenUtilsTests < Test::Unit::TestCase
         files = CodegenUtils.new().get_list_of_js_specs(app_codegen_config, app_path, file_manager: FileMock)
 
         # Assert
-        assert_equal(Pod::UI.collected_warns , ["[Deprecated] You are using the old `libraries` array to list all your codegen.\\nThis method will be removed in the future.\\nUpdate your `package.json` with a single object."])
-        assert_equal(Finder.captured_paths, ['~/MyApp/./firstlib/js', '~/MyApp/./secondlib/js'])
-        assert_equal(files, [
+        assert_equal(["[Deprecated] You are using the old `libraries` array to list all your codegen.\\nThis method will be removed in the future.\\nUpdate your `package.json` with a single object."], Pod::UI.collected_warns)
+        assert_equal(['~/MyApp/./firstlib/js', '~/MyApp/./secondlib/js'], Finder.captured_paths)
+        assert_equal([
             "${PODS_ROOT}/../MyFabricComponent1NativeComponent.js",
             "${PODS_ROOT}/../MyFabricComponent2NativeComponent.js",
             "${PODS_ROOT}/../NativeModule1.js",
             "${PODS_ROOT}/../NativeModule2.js",
-        ])
+        ], files)
     end
 
     def testGetListOfJSSpecs_whenDoesNotUsesLibraries_returnAListOfFiles
@@ -222,12 +222,12 @@ class CodegenUtilsTests < Test::Unit::TestCase
         files = CodegenUtils.new().get_list_of_js_specs(app_codegen_config, app_path, file_manager: FileMock)
 
         # Assert
-        assert_equal(Pod::UI.collected_warns , [])
-        assert_equal(Finder.captured_paths, ['~/MyApp/./js'])
-        assert_equal(files, [
+        assert_equal([], Pod::UI.collected_warns)
+        assert_equal(['~/MyApp/./js'], Finder.captured_paths)
+        assert_equal([
             "${PODS_ROOT}/../MyFabricComponent1NativeComponent.js",
             "${PODS_ROOT}/../NativeModule1.js",
-        ])
+        ], files)
     end
 
     # ================================== #
@@ -242,7 +242,7 @@ class CodegenUtilsTests < Test::Unit::TestCase
             CodegenUtils.new().get_react_codegen_script_phases(nil, file_manager: FileMock, logger: Pod::UI)
         }
         # Assert
-        assert_equal(Pod::UI.collected_warns, ["error: app_path is required to use codegen discovery."])
+        assert_equal(["error: app_path is required to use codegen discovery."], Pod::UI.collected_warns)
     end
 
     def testGetReactCodegenScriptPhases_returnTheScriptObject
@@ -264,28 +264,28 @@ class CodegenUtilsTests < Test::Unit::TestCase
         )
 
         # Assert
-        assert_equal(codegen_utils_mock.get_codegen_config_from_file_params, [{
+        assert_equal([{
             "config_key" => "codegenConfig",
             "config_path" => "~/MyApp/package.json"
-        }])
-        assert_equal(codegen_utils_mock.get_list_of_js_specs_params, [{
+        }], codegen_utils_mock.get_codegen_config_from_file_params)
+        assert_equal([{
             "app_codegen_config" => {"jsSrcsDir"=>"./js", "name"=>"MyCodegenModule"},
             "app_path" => "~/MyApp"
-        }])
-        assert_equal(script_phase_extractor_mock.extract_script_phase_params, [{
+        }], codegen_utils_mock.get_list_of_js_specs_params)
+        assert_equal([{
             fabric_enabled: false,
             react_native_path: "../node_modules/react-native",
             relative_app_root: "~/MyApp",
             relative_config_file_dir: ""
-        }])
-        assert_equal(scripts, {
+        }], script_phase_extractor_mock.extract_script_phase_params)
+        assert_equal({
             'name': 'Generate Specs',
             'execution_position': :before_compile,
             'input_files' => input_files,
             'show_env_vars_in_log': true,
             'output_files': ["${DERIVED_FILE_DIR}/react-codegen.log"],
             'script': computed_script
-        })
+        }, scripts)
     end
 
     # ================================ #
@@ -300,8 +300,8 @@ class CodegenUtilsTests < Test::Unit::TestCase
 
         # Assert
         assert_false(CodegenUtils.react_codegen_discovery_done())
-        assert_equal(Pod::UI.collected_messages, [])
-        assert_equal(Pod::UI.collected_warns, [])
+        assert_equal([], Pod::UI.collected_messages)
+        assert_equal([], Pod::UI.collected_warns)
     end
 
     def testUseReactCodegenDiscovery_whenDiscoveryDone_doNothing
@@ -313,8 +313,8 @@ class CodegenUtilsTests < Test::Unit::TestCase
 
         # Assert
         assert_true(CodegenUtils.react_codegen_discovery_done())
-        assert_equal(Pod::UI.collected_messages, ["Skipping use_react_native_codegen_discovery."])
-        assert_equal(Pod::UI.collected_warns, [])
+        assert_equal(["Skipping use_react_native_codegen_discovery."], Pod::UI.collected_messages)
+        assert_equal([], Pod::UI.collected_warns)
     end
 
     def testUseReactCodegenDiscovery_whenAppPathUndefined_abort
@@ -327,11 +327,11 @@ class CodegenUtilsTests < Test::Unit::TestCase
 
         # Assert
         assert_false(CodegenUtils.react_codegen_discovery_done())
-        assert_equal(Pod::UI.collected_messages, [])
-        assert_equal(Pod::UI.collected_warns, [
+        assert_equal([], Pod::UI.collected_messages)
+        assert_equal([
             'Error: app_path is required for use_react_native_codegen_discovery.',
             'If you are calling use_react_native_codegen_discovery! in your Podfile, please remove the call and pass `app_path` and/or `config_file_dir` to `use_react_native!`.'
-        ])
+        ], Pod::UI.collected_warns)
     end
 
     def testUseReactCodegenDiscovery_whenParametersAreGood_executeCodegen
@@ -356,25 +356,25 @@ class CodegenUtilsTests < Test::Unit::TestCase
 
         # Assert
         assert_true(CodegenUtils.react_codegen_discovery_done())
-        assert_equal(Pod::UI.collected_warns, [
+        assert_equal([
             'warn: using experimental new codegen integration'
-        ])
-        assert_equal(codegen_utils_mock.get_react_codegen_script_phases_params,  [{
+        ], Pod::UI.collected_warns)
+        assert_equal([{
             :app_path => app_path,
             :config_file_dir => "",
             :config_key => "codegenConfig",
             :react_native_path => "../node_modules/react-native"}
-        ])
-        assert_equal(codegen_utils_mock.get_react_codegen_spec_params,  [{
+        ], codegen_utils_mock.get_react_codegen_script_phases_params)
+        assert_equal([{
             :folly_version=>Helpers::Constants.folly_config()[:version],
             :package_json_file => "#{app_path}/ios/../node_modules/react-native/package.json",
             :script_phases => "echo TestScript"
-        }])
-        assert_equal(codegen_utils_mock.generate_react_codegen_spec_params,  [{
+        }], codegen_utils_mock.get_react_codegen_spec_params)
+        assert_equal([{
             :codegen_output_dir=>"build/generated/ios",
             :react_codegen_spec=>{"name"=>"ReactCodegen"}
-        }])
-        assert_equal(Pod::Executable.executed_commands, [
+        }], codegen_utils_mock.generate_react_codegen_spec_params)
+        assert_equal([
             {
                 "command" => "node",
                 "arguments"=> ["~/app/ios/../node_modules/react-native/scripts/generate-codegen-artifacts.js",
@@ -382,7 +382,7 @@ class CodegenUtilsTests < Test::Unit::TestCase
                     "-o", Pod::Config.instance.installation_root,
                     "-t", "ios"]
             }
-        ])
+        ], Pod::Executable.executed_commands)
     end
 
     # ============================= #
@@ -399,9 +399,9 @@ class CodegenUtilsTests < Test::Unit::TestCase
         CodegenUtils.clean_up_build_folder(rn_path, codegen_dir, dir_manager: DirMock, file_manager: FileMock)
 
         # Assert
-        assert_equal(FileUtils::FileUtilsStorage.rmrf_invocation_count, 0)
-        assert_equal(FileUtils::FileUtilsStorage.rmrf_paths, [])
-        assert_equal(CodegenUtils.cleanup_done(), true)
+        assert_equal(0, FileUtils::FileUtilsStorage.rmrf_invocation_count)
+        assert_equal([], FileUtils::FileUtilsStorage.rmrf_paths)
+        assert_equal(true, CodegenUtils.cleanup_done())
     end
 
     def testCleanUpCodegenFolder_whenFolderDoesNotExists_markAsCleanupDone
@@ -440,15 +440,15 @@ class CodegenUtilsTests < Test::Unit::TestCase
         CodegenUtils.clean_up_build_folder(rn_path, codegen_dir, dir_manager: DirMock, file_manager: FileMock)
 
         # Assert
-        assert_equal(DirMock.exist_invocation_params, [codegen_path, codegen_path])
-        assert_equal(DirMock.glob_invocation, ["#{codegen_path}/*", "#{codegen_path}/*"])
-        assert_equal(FileUtils::FileUtilsStorage.rmrf_invocation_count, 3)
-        assert_equal(FileUtils::FileUtilsStorage.rmrf_paths, [
+        assert_equal([codegen_path, codegen_path], DirMock.exist_invocation_params)
+        assert_equal(["#{codegen_path}/*", "#{codegen_path}/*"], DirMock.glob_invocation)
+        assert_equal(3, FileUtils::FileUtilsStorage.rmrf_invocation_count)
+        assert_equal([
             globs,
             "#{rn_path}/React/Fabric/RCTThirdPartyFabricComponentsProvider.h",
             "#{rn_path}/React/Fabric/RCTThirdPartyFabricComponentsProvider.mm",
-        ])
-        assert_equal(CodegenUtils.cleanup_done(), true)
+        ], FileUtils::FileUtilsStorage.rmrf_paths)
+        assert_equal(true, CodegenUtils.cleanup_done())
     end
 
     # ===================================== #
@@ -464,7 +464,7 @@ class CodegenUtilsTests < Test::Unit::TestCase
         CodegenUtils.assert_codegen_folder_is_empty(codegen_path, dir_manager: DirMock)
 
         # Assert
-        assert_equal(Pod::UI.collected_warns, [])
+        assert_equal([], Pod::UI.collected_warns)
     end
 
     def test_assertCodegenFolderIsEmpty_whenItExistsAndIsEmpty_doesNotAbort
@@ -478,7 +478,7 @@ class CodegenUtilsTests < Test::Unit::TestCase
         CodegenUtils.assert_codegen_folder_is_empty(codegen_path, dir_manager: DirMock)
 
         # Assert
-        assert_equal(Pod::UI.collected_warns, [])
+        assert_equal([], Pod::UI.collected_warns)
     end
 
     def test_assertCodegenFolderIsEmpty_whenItIsNotEmpty_itAborts
@@ -494,9 +494,9 @@ class CodegenUtilsTests < Test::Unit::TestCase
         }
 
         # Assert
-        assert_equal(Pod::UI.collected_warns, [
+        assert_equal([
             "Unable to remove the content of ~/app/ios/./build/generated/ios folder. Please run rm -rf ~/app/ios/./build/generated/ios and try again."
-        ])
+        ], Pod::UI.collected_warns)
     end
 
     private

@@ -34,7 +34,7 @@ class FabricTest < Test::Unit::TestCase
     end
 
     def check_installed_pods(prefix)
-        assert_equal(7, $podInvocationCount)
+        assert_equal($podInvocationCount, 7)
 
         check_pod("React-Fabric", :path => "#{prefix}/ReactCommon")
         check_pod("React-FabricComponents", :path => "#{prefix}/ReactCommon")
@@ -53,6 +53,6 @@ class FabricTest < Test::Unit::TestCase
         if modular_headers != nil then expected_params[:modular_headers] = modular_headers end
         if podspec != nil then expected_params[:podspec] = podspec end
 
-        assert_equal(params, expected_params)
+        assert_equal(expected_params, params)
     end
 end

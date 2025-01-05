@@ -54,7 +54,7 @@ class CodegenTests < Test::Unit::TestCase
         run_codegen!(app_path, config_file, :new_arch_enabled => true, :codegen_utils => codegen_utils_mock)
 
         # Assert
-        assert_equal(codegen_utils_mock.use_react_native_codegen_discovery_params, [{
+        assert_equal([{
             :app_path=>"~/app",
             :codegen_disabled=>false,
             :codegen_output_dir=>"build/generated/ios",
@@ -62,8 +62,8 @@ class CodegenTests < Test::Unit::TestCase
             :fabric_enabled=>false,
             :folly_version=>Helpers::Constants.folly_config()[:version],
             :react_native_path=>"../node_modules/react-native"
-        }])
-        assert_equal(codegen_utils_mock.get_react_codegen_spec_params, [])
-        assert_equal(codegen_utils_mock.generate_react_codegen_spec_params, [])
+        }], codegen_utils_mock.use_react_native_codegen_discovery_params)
+        assert_equal([], codegen_utils_mock.get_react_codegen_spec_params)
+        assert_equal([], codegen_utils_mock.generate_react_codegen_spec_params)
     end
 end
