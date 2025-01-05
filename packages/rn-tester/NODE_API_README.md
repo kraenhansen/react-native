@@ -9,7 +9,7 @@ To run the tests, you need a version of Hermes that is compatible with the React
 First, run `pod install` pointing to the Hermes branch with Node API (based on `rn/0.77-stable`):
 
 ```
-RCT_BUILD_HERMES_FROM_SOURCE=true HERMES_GITHUB_URL=https://github.com/kraenhansen/hermes.git HERMES_COMMIT=ce0edb864f0c8e1c21b2c05105c182a30d202057 pod install
+RCT_BUILD_HERMES_FROM_SOURCE=true HERMES_GITHUB_URL=https://github.com/kraenhansen/hermes.git HERMES_COMMIT=5b9416cdbade53fcc2f647fb0b41534fcd0701b9 pod install
 ```
 
 > [!NOTE]  
