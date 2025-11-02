@@ -71,7 +71,7 @@ end
 # - app_path: path to the React Native app. Required by the New Architecture.
 # - config_file_dir: directory of the `package.json` file, required by the New Architecture.
 def use_react_native! (
-  path: "../node_modules/react-native",
+  path: "../node_modules/react-native-macos", # [macOS]
   fabric_enabled: false,
   new_arch_enabled: NewArchitectureHelper.new_arch_enabled,
   production: false, # deprecated
@@ -424,7 +424,7 @@ end
 # - enable_hermes_profiler: whether the hermes profiler should be turned on in Release mode
 def react_native_post_install(
   installer,
-  react_native_path = "../node_modules/react-native",
+  react_native_path = "../node_modules/react-native-macos", # [macOS]
   mac_catalyst_enabled: false,
   ccache_enabled: ENV['USE_CCACHE'] == '1'
 )
