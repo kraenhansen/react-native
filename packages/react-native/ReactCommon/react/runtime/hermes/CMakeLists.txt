@@ -29,7 +29,7 @@ target_link_libraries(bridgelesshermes
         react_cxxstableapi
         ${reactnative}
 )
-if(NOT RCT_DISABLE_NODE_API)
+if(RCT_ENABLE_NODE_API)
         target_link_libraries(bridgelesshermes react_nativemodule_nodeapi)
 endif()
 

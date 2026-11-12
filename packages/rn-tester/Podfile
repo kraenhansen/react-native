@@ -24,6 +24,9 @@ prepare_react_native_project!
 # RN-Tester builds with the C++ stable API enforced. Run `RN_STRICT_API=0 pod install` to opt out.
 ENV['RN_STRICT_API'] ||= '1'
 
+# RN-Tester builds with Node-API for its Node-API example. Run `RCT_ENABLE_NODE_API=0 pod install` to opt out.
+ENV['RCT_ENABLE_NODE_API'] ||= '1'
+
 @prefix_path = "../react-native"
 
 linkage = ENV['USE_FRAMEWORKS']

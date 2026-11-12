@@ -58,6 +58,9 @@ runs:
           # For release/nightlies the default is to build all architectures.
           export ORG_GRADLE_PROJECT_reactNativeArchitectures="arm64-v8a"
           export HERMES_PREBUILT_FLAG="ORG_GRADLE_PROJECT_react.internal.useHermesNightly=true"
+          # dry-run: include Node-API, which is opt-in, so RNTester's E2E tests
+          # cover its Node-API example. Nightlies and releases ship without it.
+          export ORG_GRADLE_PROJECT_enableNodeApi="true"
           GRADLE_ARGS=(
             --init-script
             "$GITHUB_WORKSPACE/.github/workflow-scripts/legacy-jni-packaging.gradle"

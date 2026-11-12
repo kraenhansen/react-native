@@ -539,8 +539,8 @@ fun reactNativeArchitectures(): List<String> {
   return value?.toString()?.split(",") ?: listOf("armeabi-v7a", "x86", "x86_64", "arm64-v8a")
 }
 
-fun disableNodeApi(): Boolean {
-  val value = project.properties["disableNodeApi"] ?: project.properties["react.disableNodeApi"]
+fun enableNodeApi(): Boolean {
+  val value = project.properties["enableNodeApi"] ?: project.properties["react.enableNodeApi"]
   return value?.toString()?.toBoolean() ?: false
 }
 
@@ -625,8 +625,8 @@ android {
             "-DANDROID_TOOLCHAIN=clang",
             "-DCMAKE_POLICY_DEFAULT_CMP0069=NEW",
         )
-        if (disableNodeApi()) {
-          arguments("-DRCT_DISABLE_NODE_API=ON")
+        if (enableNodeApi()) {
+          arguments("-DRCT_ENABLE_NODE_API=ON")
         }
 
         targets(

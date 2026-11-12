@@ -66,8 +66,8 @@ add_react_third_party_ndk_subdir(folly)
 # the prefab artifacts through ReactNative-application.cmake).
 add_compile_definitions(RN_BUILDING)
 
-if(RCT_DISABLE_NODE_API)
-  add_compile_definitions(RCT_DISABLE_NODE_API)
+if(RCT_ENABLE_NODE_API)
+  add_compile_definitions(RCT_ENABLE_NODE_API)
 endif()
 
 # Common targets
@@ -143,7 +143,7 @@ add_react_common_subdir(react/nativemodule/microtasks)
 add_react_common_subdir(react/nativemodule/idlecallbacks)
 add_react_common_subdir(react/nativemodule/intersectionobserver)
 add_react_common_subdir(react/nativemodule/mutationobserver)
-if(NOT RCT_DISABLE_NODE_API)
+if(RCT_ENABLE_NODE_API)
   add_react_common_subdir(react/nativemodule/nodeapi)
 endif()
 add_react_common_subdir(react/nativemodule/resizeobserver)

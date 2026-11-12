@@ -7,7 +7,7 @@
 
 #pragma once
 
-#ifndef RCT_DISABLE_NODE_API
+#ifdef RCT_ENABLE_NODE_API
 
 #include <react/nativemodule/nodeapi/NodeApiEngine.h>
 
@@ -26,4 +26,4 @@ class HermesNodeApiEngine : public NodeApiEngine {
 
 } // namespace facebook::react
 
-#endif // RCT_DISABLE_NODE_API
+#endif // RCT_ENABLE_NODE_API
