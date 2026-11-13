@@ -41,8 +41,15 @@ when it creates a runtime, so it's only available when Hermes is the engine.
 Otherwise `react-native/node-api` throws.
 
 Each env is owned by its runtime and torn down with it, which runs the addon's
-env cleanup hooks. Hermes can read the host's callbacks during that teardown, so
-hosts are kept alive for the lifetime of the process.
+env cleanup hooks. Hermes can use the host while it does that, so the host must
+outlive the runtime. `HermesInstance` arranges this: it creates the runtime
+together with the Node-API state (`HermesNodeApiEngine::attachToRuntime`) in
+one owner, which every copy of the runtime pointer shares and which destroys
+the runtime before the state. The state holds one `hermes_napi_host` per
+`NodeApiHost`, shared by all of the runtime's envs, so the host is freed once
+the runtime is gone. Queued async work holds the host too. Runtimes not created
+by `HermesInstance` can't create envs. The worker pool is the only
+process-lifetime object: four threads shared by every runtime, like libuv's.
 
 Addons compile against the Node-API headers Hermes vendors from Node.js
 (`include/hermes/napi`) and link against the engine. The engine's embedder API

@@ -17,13 +17,19 @@ namespace facebook::react {
 /**
  * The host integration a Node-API engine needs from React Native: a worker
  * pool for napi_queue_async_work, dispatch onto the JS thread for thread-safe
- * functions, and handling of napi_fatal_exception. The callbacks have C
- * signatures so an engine adapter can hand them to its embedder API, passing
- * the host as their `data`.
+ * functions, and handling of napi_fatal_exception. An engine adapter forwards
+ * its embedder API's callbacks here.
  *
- * One instance exists per React Native runtime.
+ * One instance exists per React Native runtime. Each env shares ownership of
+ * it until the engine is done with the env, and queued async work until it
+ * completes, so it's freed once the runtime and its work are gone.
  */
 class NodeApiHost : public std::enable_shared_from_this<NodeApiHost> {
+  // Restricts construction to create(), which shared_from_this relies on.
+  struct PrivateTag {
+    explicit PrivateTag() = default;
+  };
+
  public:
   /**
    * Dispatches a function onto the JS thread, returning whether it was
@@ -35,33 +41,43 @@ class NodeApiHost : public std::enable_shared_from_this<NodeApiHost> {
 
   static std::shared_ptr<NodeApiHost> create(JsDispatcher dispatchToJs);
 
-  /**
-   * Engines may read the host after the last env cleanup hook has run, so no
-   * hook can tell when a host is no longer used.
-   */
-  static void retainForProcessLifetime(std::shared_ptr<NodeApiHost> host);
+  NodeApiHost(PrivateTag, JsDispatcher dispatchToJs);
 
   bool dispatchToJs(std::function<void()> &&fn)
   {
     return dispatchToJs_(std::move(fn));
   }
 
-  static void postWork(
-      void *data,
+  /**
+   * Runs `execute` on a worker thread, then `complete` on the JS thread with
+   * napi_ok.
+   */
+  void postWork(
       void *workData,
       void (*execute)(void *workData),
       void (*complete)(void *workData, napi_status status)) noexcept;
-  static bool cancelWork(void *data, void *workData) noexcept;
-  static void postTask(void *data, void *taskData, void (*callback)(void *taskData)) noexcept;
-  static void fatalException(void *data, napi_env env, napi_value error) noexcept;
 
-  // The callbacks cast `data` back to the host, so it must not be copied.
+  /**
+   * Removes work that hasn't started from the queue and completes it with
+   * napi_cancelled, returning whether it did.
+   */
+  bool cancelWork(void *workData) noexcept;
+
+  /**
+   * Runs `callback` on the JS thread.
+   */
+  void postTask(void *taskData, void (*callback)(void *taskData)) noexcept;
+
+  /**
+   * Reports `error` through ErrorUtils.reportFatalError, aborting if that
+   * fails. Runs synchronously on the JS thread.
+   */
+  void fatalException(napi_env env, napi_value error) noexcept;
+
   NodeApiHost(const NodeApiHost &) = delete;
   NodeApiHost &operator=(const NodeApiHost &) = delete;
 
  private:
-  explicit NodeApiHost(JsDispatcher dispatchToJs);
-
   JsDispatcher dispatchToJs_;
   bool inFatalException_ = false;
 };

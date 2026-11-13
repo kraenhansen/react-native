@@ -36,6 +36,30 @@ static constinit std::once_flag fatalHandlerFlag;
 static constinit std::once_flag nodeApiFlag;
 #endif
 
+#ifdef RCT_NODE_API_ENABLED
+// Owns a Hermes runtime together with state that must outlive it.
+class HermesRuntimeOwner {
+ public:
+  HermesRuntimeOwner(
+      std::unique_ptr<HermesRuntime> runtime,
+      std::shared_ptr<void> outlivesRuntime)
+      : runtime_(std::move(runtime)),
+        outlivesRuntime_(std::move(outlivesRuntime)) {}
+
+  ~HermesRuntimeOwner() {
+    // Destroy the runtime first: it can use outlivesRuntime_ until it's gone.
+    runtime_.reset();
+  }
+
+  HermesRuntimeOwner(const HermesRuntimeOwner&) = delete;
+  HermesRuntimeOwner& operator=(const HermesRuntimeOwner&) = delete;
+
+ private:
+  std::unique_ptr<HermesRuntime> runtime_;
+  std::shared_ptr<void> outlivesRuntime_;
+};
+#endif
+
 class HermesJSRuntime : public JSRuntime {
  public:
   HermesJSRuntime(
@@ -126,8 +150,19 @@ std::unique_ptr<JSRuntime> HermesInstance::createJSRuntime(
   (void)msgQueueThread;
 
   HermesRuntime& hermesRuntimeRef = *hermesRuntime;
+#ifdef RCT_NODE_API_ENABLED
+  // Hermes tears down Node-API envs, and uses their host, while the runtime is
+  // destroyed. Every copy of the runtime pointer shares ownership of the owner,
+  // so the host is freed once the last one is gone and the runtime with it.
+  auto nodeApiState = HermesNodeApiEngine::attachToRuntime(hermesRuntimeRef);
+  auto owner = std::make_shared<HermesRuntimeOwner>(
+      std::move(hermesRuntime), std::move(nodeApiState));
+  std::shared_ptr<jsi::Runtime> runtime(std::move(owner), &hermesRuntimeRef);
+#else
+  std::shared_ptr<jsi::Runtime> runtime = std::move(hermesRuntime);
+#endif
   return std::make_unique<HermesJSRuntime>(
-      std::move(hermesRuntime), hermesRuntimeRef);
+      std::move(runtime), hermesRuntimeRef);
 }
 
 } // namespace facebook::react

@@ -10,6 +10,8 @@
 #include <jsi/jsi.h>
 #include <node_api.h>
 
+#include <memory>
+
 namespace facebook::react {
 
 class NodeApiHost;
@@ -24,9 +26,10 @@ class NodeApiEngine {
 
   /**
    * Creates a Node-API environment in `runtime`, owned by the runtime and
-   * served by `host`.
+   * served by `host`. The engine keeps `host` alive for as long as the env
+   * can use it, which can be until the runtime is destroyed.
    */
-  virtual napi_env createEnv(jsi::Runtime &runtime, NodeApiHost &host) = 0;
+  virtual napi_env createEnv(jsi::Runtime &runtime, std::shared_ptr<NodeApiHost> host) = 0;
 
   /**
    * Loads the addon at `filename` into `env` and returns its exports through

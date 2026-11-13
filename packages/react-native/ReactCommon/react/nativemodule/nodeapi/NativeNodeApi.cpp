@@ -75,7 +75,6 @@ NativeNodeApi::NativeNodeApi(
         invoker->invokeAsync(std::move(fn));
         return true;
       });
-  NodeApiHost::retainForProcessLifetime(host_);
 }
 
 void NativeNodeApi::dlopen(
@@ -83,7 +82,7 @@ void NativeNodeApi::dlopen(
     jsi::Object module,
     jsi::String filename) {
   // Each load gets its own env, as in Node.
-  napi_env env = engine_->createEnv(runtime, *host_);
+  napi_env env = engine_->createEnv(runtime, host_);
   if (env == nullptr) {
     throw jsi::JSError(runtime, "Failed to create a Node-API environment");
   }

@@ -15,7 +15,6 @@
 #include <optional>
 #include <string>
 #include <thread>
-#include <vector>
 
 namespace facebook::react {
 
@@ -23,8 +22,8 @@ namespace {
 
 struct WorkItem {
   // Matched together with workData on cancellation, since a freed
-  // napi_async_work address can be reused by another runtime's env.
-  void* data = nullptr;
+  // napi_async_work address can be reused by another runtime's env. Keeps the
+  // host alive until the work completes.
   std::shared_ptr<NodeApiHost> host;
   void* workData = nullptr;
   void (*execute)(void* workData) = nullptr;
@@ -44,7 +43,7 @@ class WorkerPool {
     {
       std::lock_guard lock(mutex_);
       for (const WorkItem& queued : queue_) {
-        if (queued.data == item.data && queued.workData == item.workData) {
+        if (queued.host == item.host && queued.workData == item.workData) {
           // Queueing the same work twice would complete it twice, and the
           // second completion would follow napi_delete_async_work.
           react_native_log_warn(
@@ -57,10 +56,10 @@ class WorkerPool {
     cv_.notify_one();
   }
 
-  bool tryRemove(void* data, void* workData, WorkItem& result) {
+  bool tryRemove(const NodeApiHost* host, void* workData, WorkItem& result) {
     std::lock_guard lock(mutex_);
     for (auto it = queue_.begin(); it != queue_.end(); ++it) {
-      if (it->data == data && it->workData == workData) {
+      if (it->host.get() == host && it->workData == workData) {
         result = std::move(*it);
         queue_.erase(it);
         return true;
@@ -182,39 +181,29 @@ bool tryReportFatalError(napi_env env, napi_value error) {
 
 } // namespace
 
-NodeApiHost::NodeApiHost(JsDispatcher dispatchToJs)
+NodeApiHost::NodeApiHost(PrivateTag /*unused*/, JsDispatcher dispatchToJs)
     : dispatchToJs_(std::move(dispatchToJs)) {}
 
 std::shared_ptr<NodeApiHost> NodeApiHost::create(JsDispatcher dispatchToJs) {
-  return std::shared_ptr<NodeApiHost>(new NodeApiHost(std::move(dispatchToJs)));
-}
-
-void NodeApiHost::retainForProcessLifetime(std::shared_ptr<NodeApiHost> host) {
-  static auto* mutex = new std::mutex();
-  static auto* retained = new std::vector<std::shared_ptr<NodeApiHost>>();
-  std::lock_guard lock(*mutex);
-  retained->push_back(std::move(host));
+  return std::make_shared<NodeApiHost>(PrivateTag{}, std::move(dispatchToJs));
 }
 
 void NodeApiHost::postWork(
-    void* data,
     void* workData,
     void (*execute)(void* workData),
     void (*complete)(void* workData, napi_status status)) noexcept {
-  auto* self = static_cast<NodeApiHost*>(data);
   WorkerPool::instance().enqueue(
       WorkItem{
-          .data = data,
-          .host = self->shared_from_this(),
+          .host = shared_from_this(),
           .workData = workData,
           .execute = execute,
           .complete = complete,
       });
 }
 
-bool NodeApiHost::cancelWork(void* data, void* workData) noexcept {
+bool NodeApiHost::cancelWork(void* workData) noexcept {
   WorkItem item;
-  if (!WorkerPool::instance().tryRemove(data, workData, item)) {
+  if (!WorkerPool::instance().tryRemove(this, workData, item)) {
     return false;
   }
   // Only report success while the cancelled completion can still be delivered.
@@ -225,28 +214,21 @@ bool NodeApiHost::cancelWork(void* data, void* workData) noexcept {
 }
 
 void NodeApiHost::postTask(
-    void* data,
     void* taskData,
     void (*callback)(void* taskData)) noexcept {
-  auto* self = static_cast<NodeApiHost*>(data);
-  if (!self->dispatchToJs_([taskData, callback] { callback(taskData); })) {
+  if (!dispatchToJs_([taskData, callback] { callback(taskData); })) {
     react_native_log_warn(
         "Node-API: dropping a thread-safe function call posted after runtime teardown");
   }
 }
 
-void NodeApiHost::fatalException(
-    void* data,
-    napi_env env,
-    napi_value error) noexcept {
-  // Runs synchronously on the JS thread.
-  auto* self = static_cast<NodeApiHost*>(data);
-  if (self->inFatalException_) {
+void NodeApiHost::fatalException(napi_env env, napi_value error) noexcept {
+  if (inFatalException_) {
     abortWithFatalException(env, error);
   }
-  self->inFatalException_ = true;
+  inFatalException_ = true;
   bool reported = tryReportFatalError(env, error);
-  self->inFatalException_ = false;
+  inFatalException_ = false;
   if (!reported) {
     abortWithFatalException(env, error);
   }

@@ -11,17 +11,22 @@
 
 #include <react/nativemodule/nodeapi/NodeApiEngine.h>
 
-struct hermes_napi_host;
+#include <memory>
 
 namespace facebook::react {
 
 class HermesNodeApiEngine : public NodeApiEngine {
  public:
-  napi_env createEnv(jsi::Runtime &runtime, NodeApiHost &host) override;
-  napi_status loadAddon(napi_env env, const char *filename, napi_value *result) override;
+  /**
+   * Prepares `runtime` for Node-API addons, returning state the runtime's owner
+   * must keep alive until after the runtime is destroyed: Hermes uses it while
+   * it tears down the runtime's envs. createEnv fails for runtimes that weren't
+   * prepared.
+   */
+  static std::shared_ptr<void> attachToRuntime(jsi::Runtime &runtime);
 
- private:
-  hermes_napi_host *hermesHost_ = nullptr;
+  napi_env createEnv(jsi::Runtime &runtime, std::shared_ptr<NodeApiHost> host) override;
+  napi_status loadAddon(napi_env env, const char *filename, napi_value *result) override;
 };
 
 } // namespace facebook::react
